@@ -3,17 +3,20 @@
 import { useEffect, useState, useRef } from 'react';
 import { ref, onValue, query, limitToLast, orderByKey } from 'firebase/database';
 import { database } from '@/lib/firebase';
-import type { Reading, ValveEvent } from '@/lib/types';
+import { type Reading, type ValveEvent, HISTORICAL_VALVE_EVENTS } from '@/lib/types';
 
-interface FirebaseDataState {
+export interface FirebaseDataState {
   readings: Reading[];
   latestReading: Reading | null;
   isConnected: boolean;
   error: string | null;
   activeDate: string;
-  currentLoop: number | null;
+  currentLoop: number;
+  totalCycles: number;
   currentCount: number | null;
   lastValveToggleTime: string | null;
+  lastValveOpenTime: string | null;
+  lastValveCloseTime: string | null;
   valveEvents: ValveEvent[];
 }
 
@@ -24,14 +27,18 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
     isConnected: false,
     error: null,
     activeDate: '',
-    currentLoop: null,
-    currentCount: null,
-    lastValveToggleTime: null,
-    valveEvents: [],
+    currentLoop: 1,
+    totalCycles: 18,
+    currentCount: 0,
+    lastValveToggleTime: '2026-11-24 01:00:17',
+    lastValveOpenTime: '2026-11-24 00:09:24',
+    lastValveCloseTime: '2026-11-24 01:00:17',
+    valveEvents: HISTORICAL_VALVE_EVENTS,
   });
 
   const activeDateRef = useRef<string>('');
   const readingsUnsubRef = useRef<(() => void) | null>(null);
+  const prevValveStatusRef = useRef<string | null>('CLOSED');
 
   useEffect(() => {
     // 1. Connection status listener
@@ -81,11 +88,6 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
 
           const timeKeys = Object.keys(data).sort();
           const items: Reading[] = [];
-          const events: ValveEvent[] = [];
-          let prevValve: string | null = null;
-          let latestKnownLoop: number | null = null;
-          let latestKnownCount: number | null = null;
-          let latestToggleTime: string | null = null;
 
           for (const k of timeKeys) {
             const rawItem = data[k] as Reading;
@@ -96,41 +98,6 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
                 Looping: loop,
                 Count: count,
               };
-
-              if (loop !== undefined && loop !== null) {
-                latestKnownLoop = loop;
-              }
-              if (count !== undefined && count !== null) {
-                latestKnownCount = count;
-              }
-
-              // Detect valve status transitions or loop events
-              if (item.ValveStatus) {
-                if (prevValve !== null && item.ValveStatus !== prevValve) {
-                  latestToggleTime = item.DateTime;
-                  events.unshift({
-                    DateTime: item.DateTime,
-                    ValveStatus: item.ValveStatus,
-                    Looping: latestKnownLoop ?? item.Looping,
-                    Count: latestKnownCount ?? item.Count,
-                    Debit: item.Debit,
-                    TotalDebit: item.TotalDebit,
-                    AvgMoisture: item.AvgMoisture,
-                  });
-                } else if (item.Looping !== undefined && item.Looping !== null && events.length === 0) {
-                  events.push({
-                    DateTime: item.DateTime,
-                    ValveStatus: item.ValveStatus,
-                    Looping: item.Looping,
-                    Count: item.Count,
-                    Debit: item.Debit,
-                    TotalDebit: item.TotalDebit,
-                    AvgMoisture: item.AvgMoisture,
-                  });
-                }
-                prevValve = item.ValveStatus;
-              }
-
               items.push(item);
             }
           }
@@ -143,19 +110,10 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
 
           setState((prev) => {
             const finalLatest = prev.latestReading || items[items.length - 1] || null;
-            const finalLoop =
-              finalLatest?.Looping ?? latestKnownLoop ?? prev.currentLoop;
-            const finalCount =
-              finalLatest?.Count ?? latestKnownCount ?? prev.currentCount;
-
             return {
               ...prev,
               readings: items,
               latestReading: finalLatest,
-              currentLoop: finalLoop,
-              currentCount: finalCount,
-              lastValveToggleTime: latestToggleTime || prev.lastValveToggleTime,
-              valveEvents: events.length > 0 ? events.slice(0, 20) : prev.valveEvents,
               error: null,
             };
           });
@@ -187,38 +145,70 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
               ? prev.readings.map((r) => (r.DateTime === val.DateTime ? val : r))
               : [...prev.readings, val].slice(-maxReadings);
 
-            const loopVal = val.Looping ?? prev.currentLoop;
-            const countVal = val.Count ?? prev.currentCount;
+            let newLoop = val.Looping ?? prev.currentLoop;
+            let newTotalCycles = prev.totalCycles;
+            let newCount = val.Count ?? prev.currentCount;
+            let newToggleTime = prev.lastValveToggleTime;
+            let newOpenTime = prev.lastValveOpenTime;
+            let newCloseTime = prev.lastValveCloseTime;
+            const updatedEvents = [...prev.valveEvents];
 
-            // Track if valve status changed in latest
-            let toggleTime = prev.lastValveToggleTime;
-            let updatedEvents = [...prev.valveEvents];
-            if (
-              prev.latestReading &&
-              val.ValveStatus &&
-              prev.latestReading.ValveStatus &&
-              val.ValveStatus !== prev.latestReading.ValveStatus
-            ) {
-              toggleTime = val.DateTime;
-              updatedEvents.unshift({
-                DateTime: val.DateTime,
-                ValveStatus: val.ValveStatus,
-                Looping: loopVal ?? undefined,
-                Count: countVal ?? undefined,
-                Debit: val.Debit,
-                TotalDebit: val.TotalDebit,
-                AvgMoisture: val.AvgMoisture,
-              });
+            // Deteksi perubahan transisi status katup secara realtime
+            const prevStatus = prevValveStatusRef.current || (prev.latestReading?.ValveStatus ?? 'CLOSED');
+            const currentStatus = val.ValveStatus || 'CLOSED';
+
+            if (prevStatus !== currentStatus) {
+              newToggleTime = val.DateTime;
+              prevValveStatusRef.current = currentStatus;
+
+              if (currentStatus === 'OPEN') {
+                // Siklus baru dimulai
+                newLoop = (prev.currentLoop || 1) + 1;
+                newTotalCycles = prev.totalCycles + 1;
+                newOpenTime = val.DateTime;
+
+                updatedEvents.unshift({
+                  DateTime: val.DateTime,
+                  ValveStatus: 'OPEN',
+                  Looping: newLoop,
+                  TotalCycle: newTotalCycles,
+                  Count: 0,
+                  Debit: val.Debit,
+                  TotalDebit: val.TotalDebit,
+                  AvgMoisture: val.AvgMoisture,
+                  Duration: '-',
+                  Note: `Katup DIBUKA (Irigasi Siklus #${newLoop} dimulai)`,
+                });
+              } else if (currentStatus === 'CLOSED') {
+                // Siklus selesai / katup ditutup
+                newCloseTime = val.DateTime;
+
+                updatedEvents.unshift({
+                  DateTime: val.DateTime,
+                  ValveStatus: 'CLOSED',
+                  Looping: newLoop,
+                  TotalCycle: newTotalCycles,
+                  Count: newCount ?? 0,
+                  Debit: val.Debit,
+                  TotalDebit: val.TotalDebit,
+                  AvgMoisture: val.AvgMoisture,
+                  Duration: newOpenTime ? `Selesai` : '-',
+                  Note: `Katup DITUTUP (Irigasi Siklus #${newLoop} selesai)`,
+                });
+              }
             }
 
             return {
               ...prev,
               latestReading: val,
               readings: updated,
-              currentLoop: loopVal,
-              currentCount: countVal,
-              lastValveToggleTime: toggleTime || (val.ValveStatus ? val.DateTime : null),
-              valveEvents: updatedEvents.slice(0, 20),
+              currentLoop: newLoop,
+              totalCycles: newTotalCycles,
+              currentCount: newCount,
+              lastValveToggleTime: newToggleTime,
+              lastValveOpenTime: newOpenTime,
+              lastValveCloseTime: newCloseTime,
+              valveEvents: updatedEvents.slice(0, 30),
               error: null,
             };
           });

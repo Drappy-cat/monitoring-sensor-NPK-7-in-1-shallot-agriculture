@@ -21,8 +21,11 @@ export default function Dashboard() {
     error,
     activeDate,
     currentLoop,
+    totalCycles,
     currentCount,
     lastValveToggleTime,
+    lastValveOpenTime,
+    lastValveCloseTime,
     valveEvents,
   } = useFirebaseData(60);
 
@@ -75,6 +78,7 @@ export default function Dashboard() {
           <StatusCards
             reading={latestReading}
             currentLoop={currentLoop}
+            totalCycles={totalCycles}
             currentCount={currentCount}
             lastValveToggleTime={lastValveToggleTime}
           />
@@ -85,8 +89,11 @@ export default function Dashboard() {
           <ValveLoopingPanel
             reading={latestReading}
             currentLoop={currentLoop}
+            totalCycles={totalCycles}
             currentCount={currentCount}
             lastValveToggleTime={lastValveToggleTime}
+            lastValveOpenTime={lastValveOpenTime}
+            lastValveCloseTime={lastValveCloseTime}
             valveEvents={valveEvents}
           />
         </section>

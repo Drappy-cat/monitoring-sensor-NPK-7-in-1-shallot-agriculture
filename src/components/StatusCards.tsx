@@ -4,7 +4,8 @@ import type { Reading } from '@/lib/types';
 
 interface StatusCardsProps {
   reading: Reading | null;
-  currentLoop?: number | null;
+  currentLoop?: number;
+  totalCycles?: number;
   currentCount?: number | null;
   lastValveToggleTime?: string | null;
 }
@@ -71,8 +72,8 @@ function MetricCard({ label, value, unit, caption, badge }: MetricCardProps) {
 
 export default function StatusCards({
   reading,
-  currentLoop,
-  currentCount,
+  currentLoop = 1,
+  totalCycles = 18,
   lastValveToggleTime,
 }: StatusCardsProps) {
   if (!reading) {
@@ -89,9 +90,7 @@ export default function StatusCards({
   }
 
   const isValveOpen = reading.ValveStatus === 'OPEN';
-  const loopVal = currentLoop ?? reading.Looping ?? 1;
-  const countVal = currentCount ?? reading.Count ?? 0;
-  const toggleTimeDisplay = lastValveToggleTime || reading.DateTime || 'N/A';
+  const toggleTimeDisplay = lastValveToggleTime || '2026-11-24 01:00:17';
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
@@ -107,22 +106,22 @@ export default function StatusCards({
         }}
       />
 
-      {/* 2. Looping Keberapa */}
+      {/* 2. Siklus Solenoid Valve */}
       <MetricCard
-        label="Looping Ke"
-        value={loopVal}
-        caption={`Siklus count: #${countVal}`}
+        label="Siklus Solenoid"
+        value={`Siklus #${currentLoop}`}
+        caption={`Total kalibrasi: ${totalCycles} siklus`}
         badge={{
-          text: `LOOP #${loopVal}`,
-          variant: 'neutral',
+          text: isValveOpen ? 'AKTIF' : 'SELESAI',
+          variant: isValveOpen ? 'success' : 'neutral',
         }}
       />
 
       {/* 3. Status Katup Buka / Tutup */}
       <MetricCard
-        label="Katup Irigasi"
+        label="Katup Solenoid"
         value={reading.ValveStatus || 'CLOSED'}
-        caption={`Waktu: ${toggleTimeDisplay.split(' ')[1] || toggleTimeDisplay}`}
+        caption={`Transisi: ${toggleTimeDisplay.split(' ')[1] || toggleTimeDisplay} WIB`}
         badge={{
           text: isValveOpen ? 'OPEN' : 'CLOSED',
           variant: isValveOpen ? 'success' : 'danger',
