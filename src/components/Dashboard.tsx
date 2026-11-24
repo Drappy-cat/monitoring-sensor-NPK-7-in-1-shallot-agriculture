@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useFirebaseData } from '@/hooks/useFirebaseData';
 import { useTheme } from '@/hooks/useTheme';
 import LiveIndicator from './LiveIndicator';
@@ -9,10 +10,12 @@ import ValveLoopingPanel from './ValveLoopingPanel';
 import SensorChart from './SensorChart';
 import DebitChart from './DebitChart';
 import SensorTable from './SensorTable';
-import { PARAM_LABELS } from '@/lib/types';
+import IntervalSelector from './IntervalSelector';
+import { PARAM_LABELS, type TimeInterval } from '@/lib/types';
 
 export default function Dashboard() {
   const { theme, toggleTheme, mounted } = useTheme();
+  const [globalInterval, setGlobalInterval] = useState<TimeInterval>('second');
 
   const {
     readings,
@@ -107,6 +110,24 @@ export default function Dashboard() {
           {activeDate && <span>Tanggal: {activeDate}</span>}
         </div>
 
+        {/* Master Timeframe Selector Toolbar */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xs transition-colors">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 dark:bg-sky-400 inline-block shrink-0" />
+              <h2 className="text-xs sm:text-sm font-bold font-mono uppercase tracking-tight text-slate-900 dark:text-slate-100">
+                Pilihan Rentang Waktu Tampilan Data
+              </h2>
+            </div>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
+              Opsi agregasi grafik: per Detik (realtime), Menit (30m), Jam (00:00 - 14:00 hari ini), atau Hari (komparasi harian)
+            </p>
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <IntervalSelector value={globalInterval} onChange={setGlobalInterval} size="md" />
+          </div>
+        </div>
+
         {/* 3. SOIL MOISTURE (PRIORITAS UTAMA / REGISTER 00 01) */}
         <section className="space-y-2" aria-label="Parameter Soil Moisture">
           <div className="flex items-center justify-between">
@@ -127,9 +148,12 @@ export default function Dashboard() {
             title={PARAM_LABELS.Moisture}
             parameter="Moisture"
             readings={readings}
+            latestReading={latestReading}
             showAvgMoisture={true}
             highlighted={true}
             theme={theme}
+            interval={globalInterval}
+            onIntervalChange={setGlobalInterval}
           />
         </section>
 
@@ -149,13 +173,19 @@ export default function Dashboard() {
               title={PARAM_LABELS.Temperature}
               parameter="Temperature"
               readings={readings}
+              latestReading={latestReading}
               theme={theme}
+              interval={globalInterval}
+              onIntervalChange={setGlobalInterval}
             />
             <SensorChart
               title={PARAM_LABELS.Conductivity}
               parameter="Conductivity"
               readings={readings}
+              latestReading={latestReading}
               theme={theme}
+              interval={globalInterval}
+              onIntervalChange={setGlobalInterval}
             />
           </div>
         </section>
@@ -176,25 +206,37 @@ export default function Dashboard() {
               title={PARAM_LABELS.PH}
               parameter="PH"
               readings={readings}
+              latestReading={latestReading}
               theme={theme}
+              interval={globalInterval}
+              onIntervalChange={setGlobalInterval}
             />
             <SensorChart
               title={PARAM_LABELS.N}
               parameter="N"
               readings={readings}
+              latestReading={latestReading}
               theme={theme}
+              interval={globalInterval}
+              onIntervalChange={setGlobalInterval}
             />
             <SensorChart
               title={PARAM_LABELS.P}
               parameter="P"
               readings={readings}
+              latestReading={latestReading}
               theme={theme}
+              interval={globalInterval}
+              onIntervalChange={setGlobalInterval}
             />
             <SensorChart
               title={PARAM_LABELS.K}
               parameter="K"
               readings={readings}
+              latestReading={latestReading}
               theme={theme}
+              interval={globalInterval}
+              onIntervalChange={setGlobalInterval}
             />
           </div>
         </section>
@@ -209,7 +251,13 @@ export default function Dashboard() {
               Monitoring debit air saat ini (L/min) dan total akumulasi volume air (L)
             </p>
           </div>
-          <DebitChart readings={readings} theme={theme} />
+          <DebitChart
+            readings={readings}
+            latestReading={latestReading}
+            theme={theme}
+            interval={globalInterval}
+            onIntervalChange={setGlobalInterval}
+          />
         </section>
 
         {/* 7. MATRIKS KOMPARASI TITIK SENSOR (Mobile Sticky Column) */}
