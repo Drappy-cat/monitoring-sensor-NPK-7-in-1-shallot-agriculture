@@ -16,8 +16,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="dark">
-      <body className="antialiased bg-slate-950 font-sans text-slate-100 selection:bg-blue-600 selection:text-white">
+    <html lang="id" className="dark" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var stored = localStorage.getItem('theme-preference');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (stored === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else if (stored === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else if (!prefersDark) {
+                  document.documentElement.classList.remove('dark');
+                } else {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="antialiased bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-blue-600 selection:text-white">
         {children}
       </body>
     </html>

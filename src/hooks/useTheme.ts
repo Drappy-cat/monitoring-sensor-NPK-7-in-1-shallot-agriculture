@@ -10,20 +10,21 @@ export function useTheme() {
 
   useEffect(() => {
     try {
+      const isHtmlDark = document.documentElement.classList.contains('dark');
       const saved = localStorage.getItem('theme-preference') as Theme | null;
       if (saved === 'light' || saved === 'dark') {
         setTheme(saved);
-        document.documentElement.classList.toggle('dark', saved === 'dark');
+        if (saved === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
       } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initial: Theme = prefersDark ? 'dark' : 'light';
-        setTheme(initial);
-        document.documentElement.classList.toggle('dark', initial === 'dark');
+        const current: Theme = isHtmlDark ? 'dark' : 'light';
+        setTheme(current);
       }
     } catch {
-      // Fallback for SSR or restricted environments
       setTheme('dark');
-      document.documentElement.classList.add('dark');
     }
     setMounted(true);
   }, []);
@@ -31,12 +32,16 @@ export function useTheme() {
   const toggleTheme = () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
+    if (next === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     try {
       localStorage.setItem('theme-preference', next);
     } catch {
-      // Ignore localStorage write failures in private browsing
+      // Ignore in private browsing
     }
-    document.documentElement.classList.toggle('dark', next === 'dark');
   };
 
   return { theme, toggleTheme, mounted };
