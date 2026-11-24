@@ -120,7 +120,7 @@ export default function Dashboard() {
               </h2>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-              Opsi agregasi grafik: per Detik (realtime), Menit (30m), Jam (00:00 - 14:00 hari ini), atau Hari (komparasi harian)
+              Opsi rentang waktu data telemetri: per Detik (realtime), Menit (30m), Jam (mulai 00:30 hari ini), atau Hari (24 Nov mulai 00:30 WIB)
             </p>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto">

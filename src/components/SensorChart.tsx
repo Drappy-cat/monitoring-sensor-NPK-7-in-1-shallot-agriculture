@@ -108,8 +108,8 @@ export default function SensorChart({
       : activeInterval === 'minute'
       ? 'PER MENIT (30m)'
       : activeInterval === 'hour'
-      ? 'PER JAM (HARI INI)'
-      : 'PER HARI (KOMPARASI)';
+      ? 'PER JAM (MULAI 00:30)'
+      : 'PER HARI (24 NOV)';
 
   const options = useMemo(
     () => ({

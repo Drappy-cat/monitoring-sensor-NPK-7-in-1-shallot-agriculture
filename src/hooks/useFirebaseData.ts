@@ -6,6 +6,7 @@ import { database } from '@/lib/firebase';
 import { type Reading, type ValveEvent, HISTORICAL_VALVE_EVENTS } from '@/lib/types';
 
 const STORAGE_KEY = 'npk_shallot_recent_readings';
+const START_TIME_FILTER = '2026-11-24 00:30:00';
 const FIREBASE_REST_URL =
   'https://agriculture-esp32-2f547-default-rtdb.asia-southeast1.firebasedatabase.app/test_kalibrasi/latest.json';
 
@@ -34,7 +35,9 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            initialReadings = parsed.slice(-maxReadings);
+            initialReadings = parsed
+              .filter((r: Reading) => !r.DateTime || r.DateTime >= START_TIME_FILTER)
+              .slice(-maxReadings);
           }
         }
       } catch {
@@ -71,6 +74,9 @@ export function useFirebaseData(maxReadings: number = 60): FirebaseDataState {
 
     // Helper to process and buffer incoming reading
     const handleNewReading = (val: Reading) => {
+      // Reject any reading prior to the 00:30 start threshold
+      if (val.DateTime && val.DateTime < START_TIME_FILTER) return;
+
       setState((prev) => {
         const datePart = val.DateTime ? val.DateTime.split(' ')[0] : prev.activeDate;
         const exists = prev.readings.some((r) => r.DateTime === val.DateTime);

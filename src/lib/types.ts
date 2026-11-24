@@ -45,8 +45,8 @@ export type TimeInterval = 'second' | 'minute' | 'hour' | 'day';
 export const TIME_INTERVALS: { key: TimeInterval; label: string; tooltip: string }[] = [
   { key: 'second', label: 'Detik', tooltip: 'Data realtime per detik' },
   { key: 'minute', label: 'Menit', tooltip: 'Rata-rata per menit (30 menit terakhir)' },
-  { key: 'hour', label: 'Jam', tooltip: 'Histori per jam hari ini (00:00 - 14:00)' },
-  { key: 'day', label: 'Hari', tooltip: 'Tren komparasi 6 hari terakhir' },
+  { key: 'hour', label: 'Jam', tooltip: 'Histori per jam hari ini (Mulai 00:30 WIB)' },
+  { key: 'day', label: 'Hari', tooltip: 'Data hari ini (24 Nov - Mulai 00:30 WIB)' },
 ];
 
 export type SensorKey = 'sensor_1' | 'sensor_2' | 'sensor_3' | 'sensor_4';
