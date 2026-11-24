@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useFirebaseData } from '@/hooks/useFirebaseData';
 import { useTheme } from '@/hooks/useTheme';
 import LiveIndicator from './LiveIndicator';
@@ -55,6 +56,17 @@ export default function Dashboard() {
 
           {/* Action pills & theme toggle */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 self-start sm:self-auto">
+            {/* Camera page link */}
+            <Link
+              href="/camera"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono font-semibold border bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 dark:hover:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800/60 transition-colors"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9.75a2.25 2.25 0 002.25-2.25V7.5a2.25 2.25 0 00-2.25-2.25H4.5A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              KAMERA
+            </Link>
+
             <LiveIndicator isConnected={isConnected} />
 
             <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-1 rounded-md text-[11px] sm:text-xs font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
