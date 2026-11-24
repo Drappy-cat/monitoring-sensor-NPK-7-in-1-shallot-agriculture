@@ -13,14 +13,18 @@ import {
   Legend,
 } from 'chart.js';
 import type { Reading } from '@/lib/types';
+import type { Theme } from '@/hooks/useTheme';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface DebitChartProps {
   readings: Reading[];
+  theme?: Theme;
 }
 
-export default function DebitChart({ readings }: DebitChartProps) {
+export default function DebitChart({ readings, theme = 'dark' }: DebitChartProps) {
+  const isDark = theme === 'dark';
+
   const chartData = useMemo(() => {
     const labels = readings.map((r) => {
       const parts = r.DateTime.split(' ');
@@ -33,26 +37,26 @@ export default function DebitChart({ readings }: DebitChartProps) {
         {
           label: 'Debit Air (L/min)',
           data: readings.map((r) => r.Debit ?? 0),
-          borderColor: '#0284c7',
-          backgroundColor: '#0284c715',
+          borderColor: isDark ? '#38bdf8' : '#0284c7',
+          backgroundColor: isDark ? '#38bdf815' : '#0284c710',
           borderWidth: 1.75,
-          pointRadius: readings.length > 25 ? 0 : 2.5,
+          pointRadius: readings.length > 20 ? 0 : 2.5,
           tension: 0.15,
           yAxisID: 'y',
         },
         {
           label: 'Total Akumulasi Debit (L)',
           data: readings.map((r) => r.TotalDebit ?? 0),
-          borderColor: '#7c3aed',
-          backgroundColor: '#7c3aed15',
+          borderColor: isDark ? '#c084fc' : '#7c3aed',
+          backgroundColor: isDark ? '#c084fc15' : '#7c3aed10',
           borderWidth: 1.75,
-          pointRadius: readings.length > 25 ? 0 : 2.5,
+          pointRadius: readings.length > 20 ? 0 : 2.5,
           tension: 0.15,
           yAxisID: 'y1',
         },
       ],
     };
-  }, [readings]);
+  }, [readings, isDark]);
 
   const latest = readings[readings.length - 1];
 
@@ -65,13 +69,20 @@ export default function DebitChart({ readings }: DebitChartProps) {
       plugins: {
         legend: {
           position: 'top' as const,
-          labels: { color: '#94a3b8', usePointStyle: true, pointStyle: 'circle' as const, padding: 12, font: { size: 11, family: 'monospace' } },
+          labels: {
+            color: isDark ? '#94a3b8' : '#475569',
+            usePointStyle: true,
+            pointStyle: 'circle' as const,
+            padding: 10,
+            font: { size: 10, family: 'monospace' },
+            boxWidth: 8,
+          },
         },
         tooltip: {
-          backgroundColor: '#0f172a',
-          titleColor: '#f1f5f9',
-          bodyColor: '#cbd5e1',
-          borderColor: '#334155',
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
+          titleColor: isDark ? '#f1f5f9' : '#0f172a',
+          bodyColor: isDark ? '#cbd5e1' : '#334155',
+          borderColor: isDark ? '#334155' : '#cbd5e1',
           borderWidth: 1,
           padding: 8,
           titleFont: { family: 'monospace', size: 11 },
@@ -80,49 +91,70 @@ export default function DebitChart({ readings }: DebitChartProps) {
       },
       scales: {
         x: {
-          ticks: { color: '#64748b', maxRotation: 0, font: { size: 10, family: 'monospace' }, maxTicksLimit: 8 },
-          grid: { color: '#33415520', lineWidth: 0.5 },
+          ticks: {
+            color: '#64748b',
+            maxRotation: 0,
+            font: { size: 9, family: 'monospace' },
+            maxTicksLimit: 6,
+          },
+          grid: {
+            color: isDark ? '#33415525' : '#e2e8f0',
+            lineWidth: 0.5,
+          },
         },
         y: {
           type: 'linear' as const,
           position: 'left' as const,
-          title: { display: true, text: 'Debit (L/min)', color: '#0284c7', font: { size: 10, family: 'monospace' } },
-          ticks: { color: '#64748b', font: { size: 10, family: 'monospace' } },
-          grid: { color: '#33415530', lineWidth: 0.5 },
+          title: {
+            display: true,
+            text: 'Debit (L/min)',
+            color: isDark ? '#38bdf8' : '#0284c7',
+            font: { size: 9, family: 'monospace' },
+          },
+          ticks: { color: '#64748b', font: { size: 9, family: 'monospace' } },
+          grid: {
+            color: isDark ? '#33415535' : '#e2e8f0',
+            lineWidth: 0.5,
+          },
         },
         y1: {
           type: 'linear' as const,
           position: 'right' as const,
-          title: { display: true, text: 'Total (L)', color: '#7c3aed', font: { size: 10, family: 'monospace' } },
-          ticks: { color: '#64748b', font: { size: 10, family: 'monospace' } },
+          title: {
+            display: true,
+            text: 'Total (L)',
+            color: isDark ? '#c084fc' : '#7c3aed',
+            font: { size: 9, family: 'monospace' },
+          },
+          ticks: { color: '#64748b', font: { size: 9, family: 'monospace' } },
           grid: { drawOnChartArea: false },
         },
       },
     }),
-    []
+    [isDark]
   );
 
   return (
-    <div className="bg-slate-900/50 border border-slate-800 rounded-lg p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-800/80">
-        <h3 className="text-slate-100 font-semibold text-xs md:text-sm font-mono tracking-tight uppercase">
+    <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg p-3 sm:p-4 shadow-xs dark:shadow-none transition-colors">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 sm:mb-3 pb-2 border-b border-slate-200 dark:border-slate-800/80">
+        <h3 className="font-semibold text-xs sm:text-sm font-mono tracking-tight uppercase text-slate-900 dark:text-slate-100">
           Laju Aliran Irigasi & Akumulasi Volume
         </h3>
         {latest && (
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="px-2 py-0.5 rounded bg-sky-950/60 text-sky-300 border border-sky-800/80">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] font-mono">
+            <span className="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/80">
               Debit: {latest.Debit !== undefined ? latest.Debit.toFixed(1) : '0.0'} L/min
             </span>
-            <span className="px-2 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-800/80">
+            <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/80">
               Total: {latest.TotalDebit !== undefined ? latest.TotalDebit.toFixed(1) : '0.0'} L
             </span>
           </div>
         )}
       </div>
 
-      <div className="h-[270px]">
+      <div className="h-[210px] sm:h-[240px] md:h-[270px]">
         {readings.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-slate-500 font-mono text-xs">
+          <div className="flex items-center justify-center h-full text-slate-400 dark:text-slate-500 font-mono text-xs">
             Menunggu data telemetri...
           </div>
         ) : (

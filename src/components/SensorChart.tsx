@@ -14,6 +14,7 @@ import {
   Filler,
 } from 'chart.js';
 import type { Reading, SensorKey, SensorParam } from '@/lib/types';
+import type { Theme } from '@/hooks/useTheme';
 import { SENSOR_KEYS, SENSOR_LABELS, SENSOR_COLORS, PARAM_UNITS, PARAM_REGISTERS } from '@/lib/types';
 
 ChartJS.register(
@@ -33,6 +34,7 @@ interface SensorChartProps {
   readings: Reading[];
   showAvgMoisture?: boolean;
   highlighted?: boolean;
+  theme?: Theme;
 }
 
 export default function SensorChart({
@@ -41,7 +43,10 @@ export default function SensorChart({
   readings,
   showAvgMoisture = false,
   highlighted = false,
+  theme = 'dark',
 }: SensorChartProps) {
+  const isDark = theme === 'dark';
+
   const chartData = useMemo(() => {
     const labels = readings.map((r) => {
       const parts = r.DateTime.split(' ');
@@ -52,9 +57,9 @@ export default function SensorChart({
       label: SENSOR_LABELS[sensorKey],
       data: readings.map((r) => r[sensorKey]?.[parameter] ?? null),
       borderColor: SENSOR_COLORS[sensorKey],
-      backgroundColor: SENSOR_COLORS[sensorKey] + '15',
+      backgroundColor: SENSOR_COLORS[sensorKey] + (isDark ? '15' : '10'),
       borderWidth: 1.75,
-      pointRadius: readings.length > 25 ? 0 : 2.5,
+      pointRadius: readings.length > 20 ? 0 : 2.5,
       pointHoverRadius: 4,
       tension: 0.15,
       fill: false,
@@ -64,10 +69,10 @@ export default function SensorChart({
       datasets.unshift({
         label: 'Rata-rata 4 Sensor',
         data: readings.map((r) => r.AvgMoisture ?? null),
-        borderColor: '#a855f7',
-        backgroundColor: '#a855f720',
+        borderColor: isDark ? '#c084fc' : '#9333ea',
+        backgroundColor: isDark ? '#c084fc20' : '#9333ea15',
         borderWidth: 2.5,
-        pointRadius: readings.length > 25 ? 0 : 3.5,
+        pointRadius: readings.length > 20 ? 0 : 3.5,
         pointHoverRadius: 5,
         tension: 0.15,
         fill: false,
@@ -75,7 +80,7 @@ export default function SensorChart({
     }
 
     return { labels, datasets };
-  }, [readings, parameter, showAvgMoisture]);
+  }, [readings, parameter, showAvgMoisture, isDark]);
 
   const unit = PARAM_UNITS[parameter];
   const registerLoc = PARAM_REGISTERS[parameter];
@@ -86,7 +91,7 @@ export default function SensorChart({
       responsive: true,
       maintainAspectRatio: false,
       animation: {
-        duration: 0, // Real-time telemetry zero-latency rendering
+        duration: 0, // Realtime telemetry zero-latency rendering
       },
       interaction: {
         mode: 'index' as const,
@@ -96,18 +101,19 @@ export default function SensorChart({
         legend: {
           position: 'top' as const,
           labels: {
-            color: '#94a3b8',
+            color: isDark ? '#94a3b8' : '#475569',
             usePointStyle: true,
             pointStyle: 'circle',
-            padding: 12,
-            font: { size: 11, family: 'monospace' },
+            padding: 10,
+            font: { size: 10, family: 'monospace' },
+            boxWidth: 8,
           },
         },
         tooltip: {
-          backgroundColor: '#0f172a',
-          titleColor: '#f1f5f9',
-          bodyColor: '#cbd5e1',
-          borderColor: '#334155',
+          backgroundColor: isDark ? '#0f172a' : '#ffffff',
+          titleColor: isDark ? '#f1f5f9' : '#0f172a',
+          bodyColor: isDark ? '#cbd5e1' : '#334155',
+          borderColor: isDark ? '#334155' : '#cbd5e1',
           borderWidth: 1,
           padding: 8,
           titleFont: { family: 'monospace', size: 11 },
@@ -126,40 +132,50 @@ export default function SensorChart({
           ticks: {
             color: '#64748b',
             maxRotation: 0,
-            font: { size: 10, family: 'monospace' },
-            maxTicksLimit: 8,
+            font: { size: 9, family: 'monospace' },
+            maxTicksLimit: 6,
           },
-          grid: { color: '#33415520', lineWidth: 0.5 },
+          grid: {
+            color: isDark ? '#33415525' : '#e2e8f0',
+            lineWidth: 0.5,
+          },
         },
         y: {
           ticks: {
             color: '#64748b',
-            font: { size: 10, family: 'monospace' },
+            font: { size: 9, family: 'monospace' },
             callback: (value: string | number) => `${value}${unit ? ' ' + unit : ''}`,
           },
-          grid: { color: '#33415530', lineWidth: 0.5 },
+          grid: {
+            color: isDark ? '#33415535' : '#e2e8f0',
+            lineWidth: 0.5,
+          },
         },
       },
     }),
-    [unit]
+    [unit, isDark]
   );
 
   return (
     <div
-      className={`rounded-lg p-4 transition-colors ${
+      className={`rounded-lg p-3 sm:p-4 transition-colors ${
         highlighted
-          ? 'bg-slate-900/80 border-2 border-blue-600/60'
-          : 'bg-slate-900/50 border border-slate-800'
+          ? isDark
+            ? 'bg-slate-900/80 border-2 border-blue-600/70'
+            : 'bg-white border-2 border-blue-500 shadow-xs'
+          : isDark
+          ? 'bg-slate-900/50 border border-slate-800'
+          : 'bg-white border border-slate-200 shadow-xs'
       }`}
     >
       {/* Header Card */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-800/80">
-        <div className="flex items-center gap-2">
-          <h3 className="text-slate-100 font-semibold text-xs md:text-sm font-mono tracking-tight uppercase">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 sm:mb-3 pb-2 border-b border-slate-200 dark:border-slate-800/80">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <h3 className="font-semibold text-xs sm:text-sm font-mono tracking-tight uppercase text-slate-900 dark:text-slate-100">
             {title}
           </h3>
           {registerLoc && (
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               REG {registerLoc}
             </span>
           )}
@@ -167,23 +183,23 @@ export default function SensorChart({
 
         {/* Live current reading values */}
         {latest && (
-          <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] font-mono">
             {showAvgMoisture && latest.AvgMoisture !== undefined && (
-              <span className="px-2 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-800/80 font-medium">
+              <span className="px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/80">
                 Rata: {latest.AvgMoisture.toFixed(1)}%
               </span>
             )}
-            <span className="text-slate-400 hidden sm:inline text-[11px]">
+            <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">
               S1: {latest.sensor_1?.[parameter] ?? '-'} | S2: {latest.sensor_2?.[parameter] ?? '-'} | S3: {latest.sensor_3?.[parameter] ?? '-'} | S4: {latest.sensor_4?.[parameter] ?? '-'} {unit}
             </span>
           </div>
         )}
       </div>
 
-      {/* Chart Canvas */}
-      <div className="h-[270px]">
+      {/* Chart Canvas with mobile responsive height */}
+      <div className="h-[210px] sm:h-[240px] md:h-[270px]">
         {readings.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-slate-500 font-mono text-xs">
+          <div className="flex items-center justify-center h-full text-slate-400 dark:text-slate-500 font-mono text-xs">
             Menunggu data telemetri...
           </div>
         ) : (
