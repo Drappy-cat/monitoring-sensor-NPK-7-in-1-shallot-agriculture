@@ -9,10 +9,19 @@ out/
 **/out/
 
 # Environment files
-.env.local
-.env.*.local
-**/.env.local
-**/.env.*.local
+.env
+.env*.local
+.env.*
+!.env.example
+**/.env
+**/.env*.local
+**/.env.*
+!**/.env.example
+
+# Vercel CLI & project cache
+.vercel/
+**/.vercel/
+.vercel
 
 # JSON data & export files (keep package.json and tsconfig.json)
 *-export.json
@@ -37,5 +46,3 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
-
-.vercel
