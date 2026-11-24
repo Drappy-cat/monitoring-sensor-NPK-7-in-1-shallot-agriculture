@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js build output
+.next/
+**/.next/
+out/
+**/out/
+
+# Environment files
+.env.local
+.env.*.local
+**/.env.local
+**/.env.*.local
+
+# JSON data & export files (keep package.json and tsconfig.json)
+*-export.json
+*export*.json
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!vercel.json
+!**/*/package.json
+!**/*/package-lock.json
+!**/*/tsconfig.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
