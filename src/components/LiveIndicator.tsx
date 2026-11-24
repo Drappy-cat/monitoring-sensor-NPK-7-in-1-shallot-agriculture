@@ -7,10 +7,10 @@ interface LiveIndicatorProps {
 export default function LiveIndicator({ isConnected }: LiveIndicatorProps) {
   return (
     <div
-      className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono font-medium border ${
+      className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono font-medium border transition-colors ${
         isConnected
-          ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60'
-          : 'bg-rose-950/40 text-rose-300 border-rose-800/60'
+          ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60'
+          : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60'
       }`}
     >
       <span
