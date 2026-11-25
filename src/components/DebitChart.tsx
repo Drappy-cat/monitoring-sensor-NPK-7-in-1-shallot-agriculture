@@ -14,7 +14,7 @@ import {
 } from 'chart.js';
 import type { Reading, TimeInterval } from '@/lib/types';
 import type { Theme } from '@/hooks/useTheme';
-import { getAggregatedReadings } from '@/lib/aggregates';
+import { getAggregatedReadings, type RemoteSeries } from '@/lib/aggregates';
 import IntervalSelector from './IntervalSelector';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -22,6 +22,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 interface DebitChartProps {
   readings: Reading[];
   latestReading?: Reading | null;
+  remoteSeries?: RemoteSeries;
   theme?: Theme;
   interval?: TimeInterval;
   onIntervalChange?: (interval: TimeInterval) => void;
@@ -30,6 +31,7 @@ interface DebitChartProps {
 export default function DebitChart({
   readings,
   latestReading,
+  remoteSeries,
   theme = 'dark',
   interval,
   onIntervalChange,
@@ -45,8 +47,8 @@ export default function DebitChart({
 
   const { labels, readings: displayReadings } = useMemo(() => {
     const latest = latestReading || (readings.length > 0 ? readings[readings.length - 1] : null);
-    return getAggregatedReadings(activeInterval, readings, latest);
-  }, [activeInterval, readings, latestReading]);
+    return getAggregatedReadings(activeInterval, readings, latest, remoteSeries);
+  }, [activeInterval, readings, latestReading, remoteSeries]);
 
   const chartData = useMemo(() => {
     return {
@@ -80,12 +82,12 @@ export default function DebitChart({
 
   const intervalBadgeText =
     activeInterval === 'second'
-      ? 'PER DETIK (REALTIME)'
+      ? 'PER DETIK (FIREBASE LIVE)'
       : activeInterval === 'minute'
-      ? 'PER MENIT (30m)'
+      ? 'PER MENIT (30m LIVE)'
       : activeInterval === 'hour'
-      ? 'PER JAM (MULAI 00:30)'
-      : 'PER HARI (24 NOV)';
+      ? 'PER JAM (FIREBASE LIVE)'
+      : 'PER HARI (FIREBASE LIVE)';
 
   const options = useMemo(
     () => ({

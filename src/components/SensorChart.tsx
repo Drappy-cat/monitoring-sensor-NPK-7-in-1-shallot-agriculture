@@ -16,7 +16,7 @@ import {
 import type { Reading, SensorKey, SensorParam, TimeInterval } from '@/lib/types';
 import type { Theme } from '@/hooks/useTheme';
 import { SENSOR_KEYS, SENSOR_LABELS, SENSOR_COLORS, PARAM_UNITS, PARAM_REGISTERS } from '@/lib/types';
-import { getAggregatedReadings } from '@/lib/aggregates';
+import { getAggregatedReadings, type RemoteSeries } from '@/lib/aggregates';
 import IntervalSelector from './IntervalSelector';
 
 ChartJS.register(
@@ -35,6 +35,7 @@ interface SensorChartProps {
   parameter: SensorParam;
   readings: Reading[];
   latestReading?: Reading | null;
+  remoteSeries?: RemoteSeries;
   showAvgMoisture?: boolean;
   highlighted?: boolean;
   theme?: Theme;
@@ -47,6 +48,7 @@ export default function SensorChart({
   parameter,
   readings,
   latestReading,
+  remoteSeries,
   showAvgMoisture = false,
   highlighted = false,
   theme = 'dark',
@@ -65,8 +67,8 @@ export default function SensorChart({
   // Compute aggregated data and labels based on chosen interval (Detik, Menit, Jam, Hari)
   const { labels, readings: displayReadings } = useMemo(() => {
     const latest = latestReading || (readings.length > 0 ? readings[readings.length - 1] : null);
-    return getAggregatedReadings(activeInterval, readings, latest);
-  }, [activeInterval, readings, latestReading]);
+    return getAggregatedReadings(activeInterval, readings, latest, remoteSeries);
+  }, [activeInterval, readings, latestReading, remoteSeries]);
 
   const chartData = useMemo(() => {
     const datasets = SENSOR_KEYS.map((sensorKey: SensorKey) => ({
@@ -104,12 +106,12 @@ export default function SensorChart({
 
   const intervalBadgeText =
     activeInterval === 'second'
-      ? 'PER DETIK (REALTIME)'
+      ? 'PER DETIK (FIREBASE LIVE)'
       : activeInterval === 'minute'
-      ? 'PER MENIT (30m)'
+      ? 'PER MENIT (30m LIVE)'
       : activeInterval === 'hour'
-      ? 'PER JAM (MULAI 00:30)'
-      : 'PER HARI (24 NOV)';
+      ? 'PER JAM (FIREBASE LIVE)'
+      : 'PER HARI (FIREBASE LIVE)';
 
   const options = useMemo(
     () => ({

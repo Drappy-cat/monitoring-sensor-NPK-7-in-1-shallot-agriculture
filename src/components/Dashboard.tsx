@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useFirebaseData } from '@/hooks/useFirebaseData';
 import { useTheme } from '@/hooks/useTheme';
@@ -20,6 +20,10 @@ export default function Dashboard() {
 
   const {
     readings,
+    minuteReadings,
+    hourlyReadings,
+    dailyReadings,
+    isLoadingHistory,
     latestReading,
     isConnected,
     error,
@@ -32,6 +36,15 @@ export default function Dashboard() {
     lastValveCloseTime,
     valveEvents,
   } = useFirebaseData(60);
+
+  const remoteSeries = useMemo(
+    () => ({
+      minute: minuteReadings,
+      hour: hourlyReadings,
+      day: dailyReadings,
+    }),
+    [minuteReadings, hourlyReadings, dailyReadings]
+  );
 
   const formattedDetailTime = latestReading?.DateTime
     ? `${latestReading.DateTime} WIB`
@@ -132,10 +145,15 @@ export default function Dashboard() {
               </h2>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-              Opsi rentang waktu data telemetri: per Detik (realtime), Menit (30m), Jam (mulai 00:30 hari ini), atau Hari (24 Nov mulai 00:30 WIB)
+              100% Data Langsung Firebase RTDB: per Detik (realtime), Menit (30m), Jam (mulai 24 Nov 00:30 WIB - sekarang), atau Hari (lintas hari)
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            {isLoadingHistory && (
+              <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400 animate-pulse">
+                Sinkronisasi Firebase...
+              </span>
+            )}
             <IntervalSelector value={globalInterval} onChange={setGlobalInterval} size="md" />
           </div>
         </div>
@@ -161,6 +179,7 @@ export default function Dashboard() {
             parameter="Moisture"
             readings={readings}
             latestReading={latestReading}
+            remoteSeries={remoteSeries}
             showAvgMoisture={true}
             highlighted={true}
             theme={theme}
@@ -186,6 +205,7 @@ export default function Dashboard() {
               parameter="Temperature"
               readings={readings}
               latestReading={latestReading}
+              remoteSeries={remoteSeries}
               theme={theme}
               interval={globalInterval}
               onIntervalChange={setGlobalInterval}
@@ -195,6 +215,7 @@ export default function Dashboard() {
               parameter="Conductivity"
               readings={readings}
               latestReading={latestReading}
+              remoteSeries={remoteSeries}
               theme={theme}
               interval={globalInterval}
               onIntervalChange={setGlobalInterval}
@@ -219,6 +240,7 @@ export default function Dashboard() {
               parameter="PH"
               readings={readings}
               latestReading={latestReading}
+              remoteSeries={remoteSeries}
               theme={theme}
               interval={globalInterval}
               onIntervalChange={setGlobalInterval}
@@ -228,6 +250,7 @@ export default function Dashboard() {
               parameter="N"
               readings={readings}
               latestReading={latestReading}
+              remoteSeries={remoteSeries}
               theme={theme}
               interval={globalInterval}
               onIntervalChange={setGlobalInterval}
@@ -237,6 +260,7 @@ export default function Dashboard() {
               parameter="P"
               readings={readings}
               latestReading={latestReading}
+              remoteSeries={remoteSeries}
               theme={theme}
               interval={globalInterval}
               onIntervalChange={setGlobalInterval}
@@ -246,6 +270,7 @@ export default function Dashboard() {
               parameter="K"
               readings={readings}
               latestReading={latestReading}
+              remoteSeries={remoteSeries}
               theme={theme}
               interval={globalInterval}
               onIntervalChange={setGlobalInterval}
@@ -266,6 +291,7 @@ export default function Dashboard() {
           <DebitChart
             readings={readings}
             latestReading={latestReading}
+            remoteSeries={remoteSeries}
             theme={theme}
             interval={globalInterval}
             onIntervalChange={setGlobalInterval}

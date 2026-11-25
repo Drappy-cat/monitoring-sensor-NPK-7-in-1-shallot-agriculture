@@ -16,17 +16,25 @@ interface ValveLoopingPanelProps {
 export default function ValveLoopingPanel({
   reading,
   currentLoop,
-  totalCycles = 18,
+  totalCycles = 19,
   currentCount,
   lastValveToggleTime,
-  lastValveOpenTime = '2026-11-24 00:09:24',
-  lastValveCloseTime = '2026-11-24 01:00:17',
+  lastValveOpenTime = '2026-11-24 22:59:32',
+  lastValveCloseTime = '2026-11-24 22:59:52',
   valveEvents,
 }: ValveLoopingPanelProps) {
   const isValveOpen = reading?.ValveStatus === 'OPEN';
-  const loopNum = currentLoop ?? reading?.Looping ?? 1;
+  const loopNum = currentLoop ?? reading?.Looping ?? 2;
   const countNum = currentCount ?? reading?.Count ?? 0;
-  const toggleTime = lastValveToggleTime || '2026-11-24 01:00:17';
+  const toggleTime = lastValveToggleTime || reading?.DateTime || '-';
+  const lastClosedEvent = valveEvents.find((e) => e.ValveStatus === 'CLOSED');
+  const lastDuration = isValveOpen ? 'Sedang Aktif' : lastClosedEvent?.Duration || '-';
+  const liveTotalDebit =
+    reading?.TotalDebit !== undefined
+      ? reading.TotalDebit.toFixed(1)
+      : lastClosedEvent?.TotalDebit !== undefined
+      ? lastClosedEvent.TotalDebit.toFixed(1)
+      : '-';
 
   return (
     <div className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-lg p-3.5 sm:p-5 space-y-4 shadow-xs dark:shadow-none transition-colors">
@@ -81,7 +89,7 @@ export default function ValveLoopingPanel({
             {totalCycles} Siklus
           </div>
           <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-            17 siklus (23 Nov) + {loopNum} (24 Nov)
+            Total kumulatif: {totalCycles} siklus (termasuk 17 siklus uji 23 Nov)
           </div>
         </div>
 
@@ -107,7 +115,7 @@ export default function ValveLoopingPanel({
             {toggleTime}
           </div>
           <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-            Durasi buka: 50m 53s (1564.4 L)
+            Durasi terakhir: {lastDuration} ({liveTotalDebit} L)
           </div>
         </div>
       </div>
@@ -115,7 +123,7 @@ export default function ValveLoopingPanel({
       {/* Ringkasan Parameter Siklus Terakhir */}
       <div className="bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-md p-3 text-xs font-mono space-y-1.5 text-slate-700 dark:text-slate-300">
         <div className="text-[11px] font-semibold text-slate-900 dark:text-slate-100 uppercase tracking-wide">
-          Detail Data Siklus Buka-Tutup Terakhir (Siklus #{loopNum}):
+          Detail Data Siklus Buka-Tutup Terakhir (Siklus #{totalCycles}):
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-1">
           <div>
@@ -124,15 +132,15 @@ export default function ValveLoopingPanel({
           </div>
           <div>
             <span className="text-slate-500 dark:text-slate-400">Waktu Tutup: </span>
-            <span className="font-semibold">{lastValveCloseTime}</span>
+            <span className="font-semibold">{isValveOpen ? 'Masih Terbuka' : lastValveCloseTime}</span>
           </div>
           <div>
             <span className="text-slate-500 dark:text-slate-400">Durasi Irigasi: </span>
-            <span className="font-semibold text-emerald-700 dark:text-emerald-400">50 menit 53 detik</span>
+            <span className="font-semibold text-emerald-700 dark:text-emerald-400">{lastDuration}</span>
           </div>
           <div>
             <span className="text-slate-500 dark:text-slate-400">Total Volume Air: </span>
-            <span className="font-semibold text-blue-700 dark:text-blue-400">1564.4 Liter</span>
+            <span className="font-semibold text-blue-700 dark:text-blue-400">{liveTotalDebit} Liter</span>
           </div>
         </div>
       </div>

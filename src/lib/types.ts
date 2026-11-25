@@ -43,10 +43,10 @@ export interface ValveEvent {
 export type TimeInterval = 'second' | 'minute' | 'hour' | 'day';
 
 export const TIME_INTERVALS: { key: TimeInterval; label: string; tooltip: string }[] = [
-  { key: 'second', label: 'Detik', tooltip: 'Data realtime per detik' },
-  { key: 'minute', label: 'Menit', tooltip: 'Rata-rata per menit (30 menit terakhir)' },
-  { key: 'hour', label: 'Jam', tooltip: 'Histori per jam hari ini (Mulai 00:30 WIB)' },
-  { key: 'day', label: 'Hari', tooltip: 'Data hari ini (24 Nov - Mulai 00:30 WIB)' },
+  { key: 'second', label: 'Detik', tooltip: 'Data realtime per detik langsung dari Firebase RTDB' },
+  { key: 'minute', label: 'Menit', tooltip: 'Sampel per menit (30 menit terakhir dari Firebase)' },
+  { key: 'hour', label: 'Jam', tooltip: 'Histori per jam dari Firebase (Mulai 24 Nov 00:30 WIB - Sekarang)' },
+  { key: 'day', label: 'Hari', tooltip: 'Tren harian dari Firebase (Mulai 24 Nov 00:30 WIB - Hari Ini)' },
 ];
 
 export type SensorKey = 'sensor_1' | 'sensor_2' | 'sensor_3' | 'sensor_4';
@@ -111,8 +111,32 @@ export const PARAM_LABELS: Record<SensorParam, string> = {
   K: 'Potassium (K)',
 };
 
-// Riwayat transisi siklus buka-tutup katup solenoid aktual dari dataset kalibrasi Firebase
+// Riwayat transisi siklus buka-tutup katup solenoid aktual dari dataset Firebase RTDB
 export const HISTORICAL_VALVE_EVENTS: ValveEvent[] = [
+  {
+    DateTime: '2026-11-24 22:59:52',
+    ValveStatus: 'CLOSED',
+    Looping: 2,
+    TotalCycle: 19,
+    Count: 0,
+    Debit: 0.0,
+    TotalDebit: 1728.9,
+    AvgMoisture: 79.7,
+    Duration: '20s',
+    Note: 'Katup DITUTUP (Siklus irigasi #2 malam selesai, TotalDebit 1728.9 L -> 1737.8 L)',
+  },
+  {
+    DateTime: '2026-11-24 22:59:32',
+    ValveStatus: 'OPEN',
+    Looping: 2,
+    TotalCycle: 19,
+    Count: 0,
+    Debit: 6.13,
+    TotalDebit: 604.4,
+    AvgMoisture: 61.9,
+    Duration: '-',
+    Note: 'Katup DIBUKA otomatis/manual (Siklus #2 tanggal 24 Nov dimulai)',
+  },
   {
     DateTime: '2026-11-24 01:00:17',
     ValveStatus: 'CLOSED',
