@@ -145,7 +145,7 @@ export default function Dashboard() {
               </h2>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">
-              100% Data Langsung Firebase RTDB: per Detik (realtime), Menit (30m), Jam (mulai 24 Nov 00:30 WIB - sekarang), atau Hari (lintas hari)
+              100% Data Langsung Firebase RTDB: per Detik (realtime), Menit (30m), Jam (mulai 25 Nov 00:00 WIB), atau Hari (mulai 25 Nov 00:00 WIB)
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">

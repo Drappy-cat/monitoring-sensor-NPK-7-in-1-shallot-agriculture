@@ -1,7 +1,7 @@
 import type { Reading, TimeInterval } from './types';
 
-export const TELEMETRY_START_TIME = '2026-11-24 00:30:00';
-export const TELEMETRY_START_DATE = '2026-11-24';
+export const TELEMETRY_START_TIME = '2026-11-25 00:00:00';
+export const TELEMETRY_START_DATE = '2026-11-25';
 
 const FIREBASE_RTDB_BASE = (
   process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
@@ -124,7 +124,7 @@ export async function fetchMinuteSeriesFromFirebase(
 }
 
 /**
- * Fetches real hourly samples from Firebase starting 2026-11-24 00:30 up to latestReading.
+ * Fetches real hourly samples from Firebase starting 2026-11-25 00:00 up to latestReading.
  */
 export async function fetchHourlySeriesFromFirebase(
   dates: string[],
@@ -141,11 +141,7 @@ export async function fetchHourlySeriesFromFirebase(
     const maxHour = date === latestDate ? latestHour : 23;
     for (let h = 0; h <= maxHour; h++) {
       const hh = String(h).padStart(2, '0');
-      if (date === TELEMETRY_START_DATE && h === 0) {
-        queries.push({ date, startKey: '00-30', endKey: '00-59' });
-      } else {
-        queries.push({ date, startKey: `${hh}-00`, endKey: `${hh}-59` });
-      }
+      queries.push({ date, startKey: `${hh}-00`, endKey: `${hh}-59` });
     }
   }
 
@@ -161,7 +157,7 @@ export async function fetchHourlySeriesFromFirebase(
 }
 
 /**
- * Fetches real multi-hour/daily checkpoints from Firebase starting 2026-11-24 00:30 up to latestReading.
+ * Fetches real multi-hour/daily checkpoints from Firebase starting 2026-11-25 00:00 up to latestReading.
  */
 export async function fetchDailySeriesFromFirebase(
   dates: string[],
@@ -175,12 +171,11 @@ export async function fetchDailySeriesFromFirebase(
 
   for (const date of dates) {
     if (date < TELEMETRY_START_DATE) continue;
-    const hours = date === TELEMETRY_START_DATE ? [0, 6, 12, 18, 23] : [0, 6, 12, 18];
+    const hours = [0, 3, 6, 9, 12, 15, 18, 21];
     for (const h of hours) {
       if (date === latestDate && h > latestHour) continue;
       const hh = String(h).padStart(2, '0');
-      const startKey = date === TELEMETRY_START_DATE && h === 0 ? '00-30' : `${hh}-00`;
-      queries.push({ date, startKey, endKey: `${hh}-59` });
+      queries.push({ date, startKey: `${hh}-00`, endKey: `${hh}-59` });
     }
   }
 

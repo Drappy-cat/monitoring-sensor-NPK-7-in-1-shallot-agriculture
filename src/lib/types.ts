@@ -45,8 +45,8 @@ export type TimeInterval = 'second' | 'minute' | 'hour' | 'day';
 export const TIME_INTERVALS: { key: TimeInterval; label: string; tooltip: string }[] = [
   { key: 'second', label: 'Detik', tooltip: 'Data realtime per detik langsung dari Firebase RTDB' },
   { key: 'minute', label: 'Menit', tooltip: 'Sampel per menit (30 menit terakhir dari Firebase)' },
-  { key: 'hour', label: 'Jam', tooltip: 'Histori per jam dari Firebase (Mulai 24 Nov 00:30 WIB - Sekarang)' },
-  { key: 'day', label: 'Hari', tooltip: 'Tren harian dari Firebase (Mulai 24 Nov 00:30 WIB - Hari Ini)' },
+  { key: 'hour', label: 'Jam', tooltip: 'Histori per jam dari Firebase (Mulai 25 Nov 00:00 WIB - Sekarang)' },
+  { key: 'day', label: 'Hari', tooltip: 'Tren harian dari Firebase (Mulai 25 Nov 00:00 WIB - Sekarang)' },
 ];
 
 export type SensorKey = 'sensor_1' | 'sensor_2' | 'sensor_3' | 'sensor_4';

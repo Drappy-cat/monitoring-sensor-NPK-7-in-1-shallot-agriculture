@@ -13,7 +13,7 @@ import {
   fetchDailySeriesFromFirebase,
 } from '@/lib/aggregates';
 
-const STORAGE_KEY = 'npk_shallot_recent_readings_v2';
+const STORAGE_KEY = 'npk_shallot_recent_readings_v3';
 const FIREBASE_REST_LATEST_URL =
   (
     process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
